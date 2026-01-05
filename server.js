@@ -104,8 +104,8 @@ async function handleExcelExport(req, res) {
   worksheet.columns = [
     { header: "No", key: "no", width: 5 },
     { header: "Nama Lengkap", key: "name", width: 30 },
-    { header: "Jumlah Tamu", key: "guestCount", width: 15 },
-    { header: "Nama Tamu", key: "guests", width: 50 },
+    { header: "Jumlah Anggota", key: "guestCount", width: 15 },
+    { header: "Nama Anggota Keluarga", key: "guests", width: 50 },
     { header: "Waktu Daftar", key: "timestamp", width: 25 },
   ];
 
@@ -169,9 +169,11 @@ function handlePDFExport(req, res) {
     } else {
       data.forEach((entry, index) => {
         doc.fontSize(14).text(`${index + 1}. ${entry.name}`, { bold: true });
-        doc.fontSize(10).text(`   Jumlah Tamu: ${entry.guests?.length || 0}`);
+        doc
+          .fontSize(10)
+          .text(`   Jumlah Anggota: ${entry.guests?.length || 0}`);
         if (entry.guests && entry.guests.length > 0) {
-          doc.text(`   Nama Tamu: ${entry.guests.join(", ")}`);
+          doc.text(`   Nama Anggota: ${entry.guests.join(", ")}`);
         }
         doc.text(
           `   Waktu Daftar: ${new Date(entry.timestamp).toLocaleString(
