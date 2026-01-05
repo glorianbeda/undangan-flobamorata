@@ -164,12 +164,8 @@
 
       <div class="stats">
         <div class="stat-card">
-          <div class="stat-value" id="totalRsvp">-</div>
-          <div class="stat-label">Total Konfirmasi</div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-value" id="totalGuests">-</div>
-          <div class="stat-label">Total Anggota Keluarga</div>
+          <div class="stat-value" id="totalPeserta">-</div>
+          <div class="stat-label">Total Peserta</div>
         </div>
       </div>
 
@@ -205,24 +201,20 @@
           const data = await response.json();
 
           const tableBody = document.getElementById("tableBody");
-          const totalRsvp = document.getElementById("totalRsvp");
-          const totalGuests = document.getElementById("totalGuests");
+          const totalPeserta = document.getElementById("totalPeserta");
 
           if (data.length === 0) {
             tableBody.innerHTML =
               '<tr><td colspan="5" class="empty">Belum ada data RSVP</td></tr>';
-            totalRsvp.textContent = "0";
-            totalGuests.textContent = "0";
+            totalPeserta.textContent = "0";
             return;
           }
 
-          // Update stats
-          totalRsvp.textContent = data.length;
-          const guestCount = data.reduce(
-            (sum, entry) => sum + (entry.guests?.length || 0),
-            0
-          );
-          totalGuests.textContent = guestCount;
+          // Update stats - count submitter + all family members
+          const participantCount = data.reduce((sum, entry) => {
+            return sum + 1 + (entry.guests?.length || 0); // 1 for submitter + family members
+          }, 0);
+          totalPeserta.textContent = participantCount;
 
           // Populate table
           tableBody.innerHTML = data
