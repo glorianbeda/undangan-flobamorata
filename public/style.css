@@ -513,7 +513,6 @@ footer {
 .btn-maps-outline {
   display: block;
   width: 100%;
-  max-width: 250px;
   margin: 1.5rem auto 0;
   padding: 12px 24px;
   border: 2px solid #4285f4;
