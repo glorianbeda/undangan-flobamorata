@@ -65,17 +65,8 @@ app.post("/api/rsvp", (req, res) => {
   });
 });
 
-// Admin Export API
-app.get("/api/admin/export", async (req, res) => {
-  const { token } = req.query;
-
-  // Simple hardcoded token check
-  if (token !== "admin123") {
-    return res
-      .status(403)
-      .send("<h1>Akses Ditolak</h1><p>Token admin salah.</p>");
-  }
-
+// Admin Export API - Hard to guess URL (no token required)
+app.get("/admin/ipfp-rsvp-data-export-2026-gbeda-secure", async (req, res) => {
   const workbook = new ExcelJS.Workbook();
   const worksheet = workbook.addWorksheet("RSVP Data");
 

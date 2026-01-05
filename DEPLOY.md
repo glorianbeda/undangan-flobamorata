@@ -7,7 +7,14 @@ Port App: `3000`
 
 ---
 
-## 1️⃣ Setup Docker Compose
+## 1️⃣ Prepare Network
+
+Jika network `proxy` belum ada, buat dulu:
+```bash
+docker network create proxy
+```
+
+## 2️⃣ Setup Docker Compose
 
 Masuk ke direktori project di server:
 ```bash

@@ -1,0 +1,11 @@
+services:
+  web:
+    build: .
+    container_name: undangan-web
+    restart: unless-stopped
+    ports:
+      - "3001:3000"
+    volumes:
+      - ./rsvp_data.json:/app/rsvp_data.json
+
+# For production deployment with Traefik, use docker-compose.yml instead

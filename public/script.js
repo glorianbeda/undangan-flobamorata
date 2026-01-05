@@ -4,6 +4,28 @@ document.addEventListener("DOMContentLoaded", () => {
   const rsvpForm = document.getElementById("rsvpForm");
   const rsvpMessage = document.getElementById("rsvpMessage");
   const submitBtn = document.getElementById("submitBtn");
+  const rsvpSection = document.getElementById("rsvpSection");
+  const thankYouSection = document.getElementById("thankYouSection");
+
+  // Check if user has already submitted
+  checkSubmissionStatus();
+
+  function checkSubmissionStatus() {
+    const hasSubmitted = localStorage.getItem("ipfp_rsvp_submitted");
+    if (hasSubmitted === "true") {
+      showThankYouPage();
+    }
+  }
+
+  function showThankYouPage() {
+    rsvpSection.classList.add("hidden");
+    thankYouSection.classList.remove("hidden");
+
+    // Scroll to thank you section
+    setTimeout(() => {
+      thankYouSection.scrollIntoView({ behavior: "smooth", block: "center" });
+    }, 100);
+  }
 
   // Add Guest Logic
   addGuestBtn.addEventListener("click", () => {
@@ -34,6 +56,13 @@ document.addEventListener("DOMContentLoaded", () => {
   rsvpForm.addEventListener("submit", async (e) => {
     e.preventDefault();
 
+    // Check if already submitted
+    if (localStorage.getItem("ipfp_rsvp_submitted") === "true") {
+      alert("Anda sudah mengisi konfirmasi kehadiran sebelumnya.");
+      showThankYouPage();
+      return;
+    }
+
     // Disable button
     submitBtn.disabled = true;
     submitBtn.textContent = "Mengirim...";
@@ -63,21 +92,16 @@ document.addEventListener("DOMContentLoaded", () => {
       const result = await response.json();
 
       if (response.ok) {
-        // Success
-        rsvpMessage.textContent =
-          "Terima kasih! Konfirmasi kehadiran Anda telah tersimpan.";
-        rsvpMessage.className = "";
-        rsvpForm.reset();
-        guestList.innerHTML = ""; // Clear guests
+        // Success - Mark as submitted
+        localStorage.setItem("ipfp_rsvp_submitted", "true");
+
+        // Show thank you page
+        showThankYouPage();
       } else {
         throw new Error(result.error || "Terjadi kesalahan.");
       }
     } catch (error) {
-      rsvpMessage.textContent = "Gagal mengirim konfirmasi: " + error.message;
-      rsvpMessage.style.borderColor = "#e74c3c";
-      rsvpMessage.style.backgroundColor = "rgba(231, 76, 60, 0.2)";
-      rsvpMessage.style.color = "#e74c3c";
-      rsvpMessage.className = "";
+      alert("Gagal mengirim konfirmasi: " + error.message);
     } finally {
       submitBtn.disabled = false;
       submitBtn.textContent = "Kirim Konfirmasi";

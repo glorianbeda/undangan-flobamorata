@@ -1,9 +1,21 @@
-version: '3'
 services:
   web:
     build: .
+    container_name: undangan-web
+    restart: unless-stopped
     ports:
       - "3001:3000"
     volumes:
       - ./rsvp_data.json:/app/rsvp_data.json
-    restart: always
+    networks:
+      - proxy
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.undangan.rule=Host(`undangan.gbeda.my.id`)"
+      - "traefik.http.routers.undangan.entrypoints=web"
+      - "traefik.http.services.undangan.loadbalancer.server.port=3000"
+
+networks:
+  proxy:
+    external: true
+    name: proxy

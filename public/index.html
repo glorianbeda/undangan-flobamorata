@@ -42,13 +42,22 @@
               <p>11.00 WIB - Selesai</p>
             </div>
             <div class="detail-item">
-              <span class="icon">📍</span>
-              <p>Water Land (Perum Griya Benda 1)</p>
-              <img
-                src="images/waterland.png"
-                alt="Waterland"
-                class="location-img"
-              />
+              <div class="location-icon-wrapper">
+                <img
+                  src="images/waterland.png"
+                  alt="Waterland"
+                  class="location-icon-circle"
+                />
+              </div>
+              <p>Water Land<br />(Perum Griya Benda 1)</p>
+              <a
+                href="https://maps.app.goo.gl/35ePrq9FoPEWFmUQ7"
+                target="_blank"
+                rel="noopener"
+                class="btn-maps-outline"
+              >
+                Lihat di Maps
+              </a>
             </div>
           </div>
         </div>
@@ -82,7 +91,12 @@
       </section>
 
       <!-- RSVP Form -->
-      <section class="rsvp glass" data-aos="fade-up" data-aos-delay="200">
+      <section
+        class="rsvp glass"
+        data-aos="fade-up"
+        data-aos-delay="200"
+        id="rsvpSection"
+      >
         <h3>Konfirmasi Kehadiran</h3>
         <p style="text-align: center; margin-bottom: 1.5rem; color: #e0e0e0">
           Mohon mengisi data diri dan anggota keluarga yang akan hadir.
@@ -117,9 +131,40 @@
         <div id="rsvpMessage" class="hidden"></div>
       </section>
 
+      <!-- Thank You Section (Hidden by default) -->
+      <section
+        class="thank-you glass hidden"
+        data-aos="fade-up"
+        id="thankYouSection"
+      >
+        <div class="thank-you-content">
+          <div class="success-icon">✓</div>
+          <h2>Terima Kasih!</h2>
+          <p>Konfirmasi kehadiran Anda telah kami terima.</p>
+          <p class="thank-you-message">
+            Kami sangat menantikan kehadiran Anda di acara ini.
+          </p>
+
+          <a
+            href="https://maps.app.goo.gl/35ePrq9FoPEWFmUQ7"
+            target="_blank"
+            rel="noopener"
+            class="btn-maps-large"
+          >
+            Lihat Lokasi di Google Maps
+          </a>
+
+          <div class="event-reminder">
+            <h4>📅 Pengingat Acara</h4>
+            <p><strong>Sabtu, 24 Januari 2026</strong></p>
+            <p>11.00 WIB - Selesai</p>
+            <p>Water Land (Perum Griya Benda 1)</p>
+          </div>
+        </div>
+      </section>
+
       <footer>
         <p>&copy; 2026 IPFP. Terima Kasih atas kehadirannya.</p>
-        <a href="#" onclick="promptAdmin()" class="admin-link">Admin Export</a>
       </footer>
     </main>
 
@@ -127,12 +172,6 @@
     <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
     <script>
       AOS.init();
-      function promptAdmin() {
-        const token = prompt("Masukan Token Admin:");
-        if (token) {
-          window.location.href = `/api/admin/export?token=${token}`;
-        }
-      }
     </script>
     <script src="script.js"></script>
   </body>
