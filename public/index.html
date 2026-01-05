@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Undangan IPFP - Pertemuan & Tahun Baru</title>
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;500;700&family=Playfair+Display:ital,wght@0,400;0,700;1,400&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="style.css" />
+    <!-- AOS Animation -->
+    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet" />
+  </head>
+  <body>
+    <div class="background-overlay"></div>
+
+    <main class="container">
+      <!-- Header / Hero -->
+      <header class="hero" data-aos="fade-down">
+        <div class="logos">
+          <img src="images/flobamora.jpg" alt="Logo IPFP" class="logo-circle" />
+        </div>
+        <h2 class="org-name">Ikatan Persaudaraan Flobamorata Pasundan</h2>
+        <p class="subtitle">Mengundang Bapak/Ibu/Saudara/i</p>
+
+        <div class="invitation-card glass">
+          <h1 class="main-title">
+            Pertemuan Anggota & <br />Sambut Tahun Baru 2026
+          </h1>
+
+          <div class="event-details">
+            <div class="detail-item">
+              <span class="icon">📅</span>
+              <p>Sabtu, 24 Januari 2026</p>
+            </div>
+            <div class="detail-item">
+              <span class="icon">⏰</span>
+              <p>11.00 WIB - Selesai</p>
+            </div>
+            <div class="detail-item">
+              <span class="icon">📍</span>
+              <p>Water Land (Perum Griya Benda 1)</p>
+              <img
+                src="images/waterland.png"
+                alt="Waterland"
+                class="location-img"
+              />
+            </div>
+          </div>
+        </div>
+      </header>
+
+      <!-- Agenda Section -->
+      <section class="agenda glass" data-aos="fade-up">
+        <h3>Susunan Acara</h3>
+        <ul class="timeline">
+          <li>
+            <span class="time">11.00 - 11.05</span>
+            <span class="event">Pembukaan</span>
+          </li>
+          <li>
+            <span class="time">11.05 - 11.23</span>
+            <span class="event">Doa, Lagu Kebangsaan, Ikrar & Sambutan</span>
+          </li>
+          <li>
+            <span class="time">11.23 - 11.43</span>
+            <span class="event">Arahan Pembina & Sosialisasi Visi Misi</span>
+          </li>
+          <li>
+            <span class="time">11.45 - 14.00</span>
+            <span class="event">Makan Siang & Ramah Tamah</span>
+          </li>
+          <li>
+            <span class="time">14.00 - 15.00</span>
+            <span class="event">Acara Bebas</span>
+          </li>
+        </ul>
+      </section>
+
+      <!-- RSVP Form -->
+      <section class="rsvp glass" data-aos="fade-up" data-aos-delay="200">
+        <h3>Konfirmasi Kehadiran</h3>
+        <p style="text-align: center; margin-bottom: 1.5rem; color: #e0e0e0">
+          Mohon mengisi data diri dan anggota keluarga yang akan hadir.
+        </p>
+
+        <form id="rsvpForm">
+          <div class="form-group">
+            <label for="name">Nama Lengkap</label>
+            <input
+              type="text"
+              id="name"
+              name="name"
+              placeholder="Masukan nama anda..."
+              required
+            />
+          </div>
+
+          <div class="guests-section">
+            <label>Anggota Keluarga / Tamu Tambahan</label>
+            <div id="guestList">
+              <!-- Dynamic guest inputs -->
+            </div>
+            <button type="button" id="addGuestBtn" class="btn-outline">
+              + Tambah Keluarga
+            </button>
+          </div>
+
+          <button type="submit" class="btn-primary" id="submitBtn">
+            Kirim Konfirmasi
+          </button>
+        </form>
+        <div id="rsvpMessage" class="hidden"></div>
+      </section>
+
+      <footer>
+        <p>&copy; 2026 IPFP. Terima Kasih atas kehadirannya.</p>
+        <a href="#" onclick="promptAdmin()" class="admin-link">Admin Export</a>
+      </footer>
+    </main>
+
+    <!-- Scripts -->
+    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+    <script>
+      AOS.init();
+      function promptAdmin() {
+        const token = prompt("Masukan Token Admin:");
+        if (token) {
+          window.location.href = `/api/admin/export?token=${token}`;
+        }
+      }
+    </script>
+    <script src="script.js"></script>
+  </body>
+</html>
