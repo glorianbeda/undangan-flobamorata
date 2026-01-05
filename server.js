@@ -4,6 +4,7 @@ const cors = require("cors");
 const fs = require("fs");
 const path = require("path");
 const ExcelJS = require("exceljs");
+const PDFDocument = require("pdfkit");
 
 const app = express();
 const PORT = 3000;
@@ -65,8 +66,38 @@ app.post("/api/rsvp", (req, res) => {
   });
 });
 
-// Admin Export API - Hard to guess URL (no token required)
-app.get("/admin/ipfp-rsvp-data-export-2026-gbeda-secure", async (req, res) => {
+// Admin Dashboard - Serve HTML page
+app.get("/admin/ipfp-rsvp-data-export-2026-gbeda-secure", (req, res) => {
+  const exportType = req.query.export;
+
+  if (exportType === "excel") {
+    return handleExcelExport(req, res);
+  } else if (exportType === "pdf") {
+    return handlePDFExport(req, res);
+  }
+
+  // Serve the admin HTML page
+  res.sendFile(path.join(__dirname, "public", "admin.html"));
+});
+
+// API to get RSVP data as JSON
+app.get("/api/admin/data", (req, res) => {
+  if (fs.existsSync(DATA_FILE)) {
+    const rawData = fs.readFileSync(DATA_FILE, "utf8");
+    let data = [];
+    try {
+      data = JSON.parse(rawData);
+    } catch (e) {
+      data = [];
+    }
+    res.json(data);
+  } else {
+    res.json([]);
+  }
+});
+
+// Excel Export Handler
+async function handleExcelExport(req, res) {
   const workbook = new ExcelJS.Workbook();
   const worksheet = workbook.addWorksheet("RSVP Data");
 
@@ -106,7 +137,56 @@ app.get("/admin/ipfp-rsvp-data-export-2026-gbeda-secure", async (req, res) => {
 
   await workbook.xlsx.write(res);
   res.end();
-});
+}
+
+// PDF Export Handler
+function handlePDFExport(req, res) {
+  const doc = new PDFDocument({ margin: 50 });
+
+  res.setHeader("Content-Type", "application/pdf");
+  res.setHeader("Content-Disposition", "attachment; filename=RSVP_Data.pdf");
+
+  doc.pipe(res);
+
+  // Header
+  doc.fontSize(20).text("RSVP Data - IPFP 2026", { align: "center" });
+  doc
+    .fontSize(12)
+    .text("Pertemuan Anggota & Sambut Tahun Baru", { align: "center" });
+  doc.moveDown(2);
+
+  if (fs.existsSync(DATA_FILE)) {
+    const rawData = fs.readFileSync(DATA_FILE, "utf8");
+    let data = [];
+    try {
+      data = JSON.parse(rawData);
+    } catch (e) {
+      data = [];
+    }
+
+    if (data.length === 0) {
+      doc.fontSize(12).text("Belum ada data RSVP", { align: "center" });
+    } else {
+      data.forEach((entry, index) => {
+        doc.fontSize(14).text(`${index + 1}. ${entry.name}`, { bold: true });
+        doc.fontSize(10).text(`   Jumlah Tamu: ${entry.guests?.length || 0}`);
+        if (entry.guests && entry.guests.length > 0) {
+          doc.text(`   Nama Tamu: ${entry.guests.join(", ")}`);
+        }
+        doc.text(
+          `   Waktu Daftar: ${new Date(entry.timestamp).toLocaleString(
+            "id-ID"
+          )}`
+        );
+        doc.moveDown(0.5);
+      });
+    }
+  } else {
+    doc.fontSize(12).text("Belum ada data RSVP", { align: "center" });
+  }
+
+  doc.end();
+}
 
 app.listen(PORT, () => {
   console.log(`Server is running on http://localhost:${PORT}`);
