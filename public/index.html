@@ -18,7 +18,20 @@
   <body>
     <div class="background-overlay"></div>
 
-    <main class="container">
+    <!-- Splash Screen -->
+    <div id="splashScreen" class="splash-screen">
+      <div class="splash-content">
+        <img src="images/flobamora.jpg" alt="Logo IPFP" class="splash-logo" />
+        <h1 class="splash-title">Undangan</h1>
+        <p class="splash-subtitle">Pertemuan Anggota & Tahun Baru 2026</p>
+        <p class="splash-org">Ikatan Persaudaraan Flobamorata Pasundan</p>
+        <button id="openInvitation" class="btn-open">
+          <span>🎉</span> Buka Undangan
+        </button>
+      </div>
+    </div>
+
+    <main class="container hidden" id="mainContent">
       <!-- Header / Hero -->
       <header class="hero" data-aos="fade-down">
         <div class="logos">
@@ -178,8 +191,64 @@
     <script src="script.js"></script>
 
     <!-- Background Music -->
-    <audio id="bgMusic" loop autoplay>
+    <audio id="bgMusic" loop>
       <source src="music/instrumen.mp3" type="audio/mpeg" />
     </audio>
+
+    <!-- Music Toggle Button -->
+    <button id="musicToggle" class="music-btn hidden" title="Play Music">
+      🎵
+    </button>
+
+    <script>
+      const bgMusic = document.getElementById("bgMusic");
+      const musicToggle = document.getElementById("musicToggle");
+      const splashScreen = document.getElementById("splashScreen");
+      const mainContent = document.getElementById("mainContent");
+      const openBtn = document.getElementById("openInvitation");
+      let isPlaying = false;
+
+      function playMusic() {
+        if (!isPlaying) {
+          bgMusic
+            .play()
+            .then(() => {
+              isPlaying = true;
+              musicToggle.textContent = "🔊";
+              musicToggle.classList.add("playing");
+            })
+            .catch(() => {});
+        }
+      }
+
+      function toggleMusic() {
+        if (isPlaying) {
+          bgMusic.pause();
+          musicToggle.textContent = "🎵";
+          musicToggle.classList.remove("playing");
+          isPlaying = false;
+        } else {
+          playMusic();
+        }
+      }
+
+      // Open invitation - play music and show content
+      openBtn.addEventListener("click", () => {
+        splashScreen.classList.add("fade-out");
+        setTimeout(() => {
+          splashScreen.style.display = "none";
+          mainContent.classList.remove("hidden");
+          musicToggle.classList.remove("hidden");
+          playMusic();
+          AOS.refresh();
+        }, 500);
+      });
+
+      // Toggle button
+      musicToggle.addEventListener("click", (e) => {
+        e.stopPropagation();
+        toggleMusic();
+      });
+    </script>
   </body>
 </html>
