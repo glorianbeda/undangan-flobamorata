@@ -7,7 +7,7 @@ const ExcelJS = require("exceljs");
 const PDFDocument = require("pdfkit");
 
 const app = express();
-const PORT = 3000;
+const PORT = 3001;
 const DATA_FILE = path.join(__dirname, "rsvp_data.json");
 const VERSION_FILE = path.join(__dirname, "public", "version.json");
 
@@ -181,6 +181,45 @@ app.put("/api/rsvp/:id", (req, res) => {
       res
         .status(200)
         .json({ message: "RSVP berhasil diupdate!", data: currentData[index] });
+    });
+  });
+});
+
+// API to delete RSVP entry
+app.delete("/api/rsvp/:id", (req, res) => {
+  const { id } = req.params;
+
+  fs.readFile(DATA_FILE, "utf8", (err, data) => {
+    if (err) {
+      console.error("Read Error:", err);
+      return res.status(500).json({ error: "Gagal membaca data" });
+    }
+
+    let currentData = [];
+    try {
+      currentData = data ? JSON.parse(data) : [];
+    } catch (parseErr) {
+      console.error("Parse Error:", parseErr);
+      return res.status(500).json({ error: "Data corrupt" });
+    }
+
+    const index = currentData.findIndex((item) => item.id === id);
+
+    if (index === -1) {
+      return res.status(404).json({ error: "RSVP tidak ditemukan" });
+    }
+
+    // Remove entry
+    const deletedEntry = currentData.splice(index, 1)[0];
+
+    fs.writeFile(DATA_FILE, JSON.stringify(currentData, null, 2), (err) => {
+      if (err) {
+        console.error("Write Error:", err);
+        return res.status(500).json({ error: "Gagal menghapus data" });
+      }
+      res
+        .status(200)
+        .json({ message: "RSVP berhasil dihapus!", data: deletedEntry });
     });
   });
 });
