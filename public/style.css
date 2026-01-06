@@ -690,7 +690,8 @@ footer {
   gap: 12px;
   padding: 1rem 1.5rem;
   border-radius: 12px;
-  margin-bottom: 1.5rem;
+  margin-top: 1rem;
+  margin-bottom: 0.5rem;
   font-weight: 600;
   animation: slideDown 0.3s ease;
   text-align: center;
