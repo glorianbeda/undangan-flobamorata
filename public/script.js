@@ -42,6 +42,13 @@
         if (response.ok) {
           const data = await response.json();
           isEditMode = true;
+
+          // If accessed via URL param, save to localStorage for future visits
+          if (isUrlBasedEdit) {
+            localStorage.setItem("ipfp_rsvp_id", existingRsvpId);
+            localStorage.setItem("ipfp_rsvp_submitted", "true");
+          }
+
           populateForm(data);
           updateUIForEditMode();
         } else if (response.status === 404) {
