@@ -178,6 +178,10 @@
           if (result.data && result.data.id) {
             localStorage.setItem("ipfp_rsvp_id", result.data.id);
             existingRsvpId = result.data.id;
+
+            // Update URL with id parameter (without page reload)
+            const newUrl = `${window.location.pathname}?id=${result.data.id}`;
+            window.history.replaceState({}, "", newUrl);
           }
           localStorage.setItem("ipfp_rsvp_submitted", "true");
 
