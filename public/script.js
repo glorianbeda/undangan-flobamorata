@@ -16,9 +16,14 @@
       return;
     }
 
-    // State
-    let existingRsvpId = localStorage.getItem("ipfp_rsvp_id");
+    // Get RSVP ID from URL params or localStorage
+    const urlParams = new URLSearchParams(window.location.search);
+    const urlRsvpId = urlParams.get("id");
+
+    // State - prioritize URL param over localStorage
+    let existingRsvpId = urlRsvpId || localStorage.getItem("ipfp_rsvp_id");
     let isEditMode = false;
+    let isUrlBasedEdit = !!urlRsvpId; // Track if editing via URL
 
     // Initialize
     init();
@@ -204,18 +209,30 @@
       // Don't hide RSVP section, just scroll to thank you
       thankYouSection.classList.remove("hidden");
 
-      // Add edit button to thank you section if not exists
-      let editBtn = thankYouSection.querySelector(".btn-edit-data");
-      if (!editBtn) {
-        editBtn = document.createElement("button");
-        editBtn.className = "btn-edit-data btn-outline";
-        editBtn.textContent = "✏️ Edit Data Anda";
-        editBtn.onclick = () => {
-          rsvpSection.scrollIntoView({ behavior: "smooth", block: "center" });
-        };
+      // Add edit section if not exists
+      let editSection = thankYouSection.querySelector(".edit-link-section");
+      if (!editSection && existingRsvpId) {
+        editSection = document.createElement("div");
+        editSection.className = "edit-link-section";
+
+        const editUrl = `${window.location.origin}${window.location.pathname}?id=${existingRsvpId}`;
+
+        editSection.innerHTML = `
+          <div class="edit-link-box">
+            <p style="margin-bottom: 0.5rem; font-size: 0.9rem; color: #aaa;">Link untuk edit data Anda:</p>
+            <div class="edit-link-container">
+              <input type="text" value="${editUrl}" readonly class="edit-link-input" id="editLinkInput">
+              <button class="btn-copy" onclick="copyEditLink()">📋 Copy</button>
+            </div>
+          </div>
+          <button class="btn-edit-data btn-outline" onclick="document.getElementById('rsvpSection').scrollIntoView({ behavior: 'smooth', block: 'center' })">
+            ✏️ Edit Data Anda
+          </button>
+        `;
+
         const content = thankYouSection.querySelector(".thank-you-content");
         if (content) {
-          content.appendChild(editBtn);
+          content.appendChild(editSection);
         }
       }
 
@@ -223,6 +240,25 @@
         thankYouSection.scrollIntoView({ behavior: "smooth", block: "center" });
       }, 100);
     }
+
+    // Copy link function - make it global
+    window.copyEditLink = function () {
+      const input = document.getElementById("editLinkInput");
+      if (input) {
+        input.select();
+        document.execCommand("copy");
+
+        // Show feedback
+        const btn = document.querySelector(".btn-copy");
+        if (btn) {
+          const originalText = btn.textContent;
+          btn.textContent = "✓ Copied!";
+          setTimeout(() => {
+            btn.textContent = originalText;
+          }, 2000);
+        }
+      }
+    };
   }
 
   // Run when DOM is ready

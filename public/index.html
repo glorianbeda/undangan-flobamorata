@@ -378,9 +378,12 @@
       let isPlaying = false;
       let musicTriggered = false;
 
-      // Check if returning user (already submitted RSVP)
-      const isReturningUser =
+      // Check if returning user (already submitted RSVP) or has ID in URL params
+      const urlParams = new URLSearchParams(window.location.search);
+      const hasUrlId = urlParams.has("id");
+      const hasLocalStorage =
         localStorage.getItem("ipfp_rsvp_submitted") === "true";
+      const isReturningUser = hasUrlId || hasLocalStorage;
 
       function playMusic() {
         if (!isPlaying && !musicTriggered) {

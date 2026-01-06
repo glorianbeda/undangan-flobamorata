@@ -765,3 +765,49 @@ footer {
   padding: 14px 28px;
   font-size: 1rem;
 }
+
+/* Edit Link Section */
+.edit-link-section {
+  margin-top: 2rem;
+  width: 100%;
+}
+
+.edit-link-box {
+  background: rgba(255, 255, 255, 0.1);
+  padding: 1rem;
+  border-radius: 12px;
+  margin-bottom: 1rem;
+}
+
+.edit-link-container {
+  display: flex;
+  gap: 8px;
+}
+
+.edit-link-input {
+  flex: 1;
+  padding: 10px 14px;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  background: rgba(0, 0, 0, 0.3);
+  color: #fff;
+  font-size: 0.85rem;
+  font-family: monospace;
+}
+
+.btn-copy {
+  padding: 10px 16px;
+  border: none;
+  border-radius: 8px;
+  background: linear-gradient(135deg, #8e44ad, #da4453);
+  color: white;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  white-space: nowrap;
+}
+
+.btn-copy:hover {
+  transform: scale(1.05);
+  box-shadow: 0 4px 15px rgba(142, 68, 173, 0.4);
+}
