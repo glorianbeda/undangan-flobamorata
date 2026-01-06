@@ -68,6 +68,9 @@ h3 {
   padding: 1rem 2rem;
   border-radius: 15px;
   border: 2px solid rgba(255, 215, 0, 0.3);
+  white-space: nowrap;
+  transform-origin: center;
+  scale: clamp(0.5, calc(90vw / 600px), 1);
 }
 
 .subtitle {
