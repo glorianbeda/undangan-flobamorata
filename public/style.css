@@ -57,20 +57,20 @@ h3 {
 }
 
 .org-name {
-  font-size: 1.6rem;
+  font-size: clamp(0.85rem, 3.5vw, 1.2rem);
   font-weight: 900;
   margin-bottom: 1rem;
   text-transform: uppercase;
-  letter-spacing: 2.5px;
+  letter-spacing: clamp(1px, 0.5vw, 2.5px);
   color: #ffd700;
   text-shadow: 0 4px 8px rgba(0, 0, 0, 1);
   background: rgba(0, 0, 0, 0.7);
-  padding: 1rem 2rem;
+  padding: 1rem 1.5rem;
   border-radius: 15px;
   border: 2px solid rgba(255, 215, 0, 0.3);
-  white-space: nowrap;
-  transform-origin: center;
-  scale: clamp(0.5, calc(90vw / 600px), 1);
+  max-width: 95%;
+  text-align: center;
+  line-height: 1.4;
 }
 
 .subtitle {
