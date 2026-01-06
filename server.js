@@ -9,11 +9,51 @@ const PDFDocument = require("pdfkit");
 const app = express();
 const PORT = 3000;
 const DATA_FILE = path.join(__dirname, "rsvp_data.json");
+const VERSION_FILE = path.join(__dirname, "public", "version.json");
+
+// Get current version (from version.json or use timestamp as fallback)
+function getVersion() {
+  try {
+    if (fs.existsSync(VERSION_FILE)) {
+      const versionData = JSON.parse(fs.readFileSync(VERSION_FILE, "utf8"));
+      return versionData.version || Date.now().toString();
+    }
+  } catch (e) {
+    // Fallback
+  }
+  return Date.now().toString();
+}
 
 // Middleware
 app.use(cors());
 app.use(bodyParser.json());
-app.use(express.static(path.join(__dirname, "public")));
+
+// API endpoint for version
+app.get("/api/version", (req, res) => {
+  res.json({ version: getVersion() });
+});
+
+// Static files with cache-control (always revalidate)
+app.use(
+  express.static(path.join(__dirname, "public"), {
+    etag: true,
+    lastModified: true,
+    setHeaders: (res, filePath) => {
+      // CSS, JS, HTML - always revalidate
+      if (
+        filePath.endsWith(".css") ||
+        filePath.endsWith(".js") ||
+        filePath.endsWith(".html")
+      ) {
+        res.setHeader("Cache-Control", "no-cache, must-revalidate");
+      }
+      // Images & audio - cache for 1 day
+      else if (filePath.match(/\.(jpg|jpeg|png|gif|mp3|mp4|webp)$/)) {
+        res.setHeader("Cache-Control", "public, max-age=86400");
+      }
+    },
+  })
+);
 
 // Initialize data file if not exists
 if (!fs.existsSync(DATA_FILE)) {
@@ -24,7 +64,37 @@ if (!fs.existsSync(DATA_FILE)) {
   }
 }
 
-// API to handle RSVP
+// Generate simple UUID
+function generateId() {
+  return (
+    "rsvp_" + Date.now().toString(36) + Math.random().toString(36).substr(2, 9)
+  );
+}
+
+// API to get RSVP by ID
+app.get("/api/rsvp/:id", (req, res) => {
+  const { id } = req.params;
+
+  if (!fs.existsSync(DATA_FILE)) {
+    return res.status(404).json({ error: "Data tidak ditemukan" });
+  }
+
+  try {
+    const rawData = fs.readFileSync(DATA_FILE, "utf8");
+    const data = JSON.parse(rawData);
+    const entry = data.find((item) => item.id === id);
+
+    if (!entry) {
+      return res.status(404).json({ error: "RSVP tidak ditemukan" });
+    }
+
+    res.json(entry);
+  } catch (err) {
+    res.status(500).json({ error: "Gagal membaca data" });
+  }
+});
+
+// API to handle new RSVP
 app.post("/api/rsvp", (req, res) => {
   const { name, guests } = req.body;
 
@@ -33,16 +103,16 @@ app.post("/api/rsvp", (req, res) => {
   }
 
   const newEntry = {
+    id: generateId(),
     name,
-    guests: guests || [], // guests is an array of names
+    guests: guests || [],
     timestamp: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
   };
 
   fs.readFile(DATA_FILE, "utf8", (err, data) => {
     if (err) {
       console.error("Read Error:", err);
-      // If file doesn't exist/read error, try to start fresh
-      // return res.status(500).json({ error: 'Gagal membaca database' });
     }
 
     let currentData = [];
@@ -62,6 +132,55 @@ app.post("/api/rsvp", (req, res) => {
       res
         .status(200)
         .json({ message: "RSVP berhasil disimpan!", data: newEntry });
+    });
+  });
+});
+
+// API to update existing RSVP
+app.put("/api/rsvp/:id", (req, res) => {
+  const { id } = req.params;
+  const { name, guests } = req.body;
+
+  if (!name) {
+    return res.status(400).json({ error: "Nama wajib diisi" });
+  }
+
+  fs.readFile(DATA_FILE, "utf8", (err, data) => {
+    if (err) {
+      console.error("Read Error:", err);
+      return res.status(500).json({ error: "Gagal membaca data" });
+    }
+
+    let currentData = [];
+    try {
+      currentData = data ? JSON.parse(data) : [];
+    } catch (parseErr) {
+      console.error("Parse Error:", parseErr);
+      return res.status(500).json({ error: "Data corrupt" });
+    }
+
+    const index = currentData.findIndex((item) => item.id === id);
+
+    if (index === -1) {
+      return res.status(404).json({ error: "RSVP tidak ditemukan" });
+    }
+
+    // Update entry
+    currentData[index] = {
+      ...currentData[index],
+      name,
+      guests: guests || [],
+      updatedAt: new Date().toISOString(),
+    };
+
+    fs.writeFile(DATA_FILE, JSON.stringify(currentData, null, 2), (err) => {
+      if (err) {
+        console.error("Write Error:", err);
+        return res.status(500).json({ error: "Gagal menyimpan data" });
+      }
+      res
+        .status(200)
+        .json({ message: "RSVP berhasil diupdate!", data: currentData[index] });
     });
   });
 });

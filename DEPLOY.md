@@ -53,7 +53,16 @@ networks:
 
 > **Catatan**: Pastikan network `proxy` sudah ada. Jika belum, sesuaikan dengan nama network Traefik Anda.
 
-Build & Jalankan container:
+### Generate Version untuk Cache Busting (Opsional tapi Direkomendasikan)
+
+Sebelum build, jalankan build script untuk generate versi baru:
+```bash
+npm run build
+```
+
+Ini akan membuat file `public/version.json` yang berisi hash unik berdasarkan konten file. Browser akan selalu mengambil file CSS/JS terbaru setiap kali versi berubah.
+
+### Build & Jalankan container:
 ```bash
 docker compose up -d --build
 ```

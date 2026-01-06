@@ -3,7 +3,11 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Undangan IPFP - Pertemuan & Tahun Baru</title>
+    <title>Undangan IPFP - Pertemuan &amp; Tahun Baru</title>
+
+    <!-- Preload CSS untuk mencegah FOUC -->
+    <link rel="preload" href="style.css" as="style" />
+
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -11,7 +15,151 @@
       href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;500;700&family=Playfair+Display:ital,wght@0,400;0,700;1,400&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="style.css" />
+
+    <!-- Critical CSS inline untuk splash screen -->
+    <style>
+      /* Critical CSS - Splash Screen */
+      :root {
+        --primary-color: #8e44ad;
+        --secondary-color: #da4453;
+      }
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+      body {
+        font-family: "Outfit", sans-serif;
+        color: #ffffff;
+        overflow-x: hidden;
+        min-height: 100vh;
+        background-color: #1a1a1a;
+      }
+      .splash-screen {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(
+          135deg,
+          rgba(30, 30, 30, 0.95) 0%,
+          rgba(20, 20, 20, 0.98) 100%
+        );
+        z-index: 9999;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: opacity 0.5s ease, visibility 0.5s ease;
+      }
+      .splash-screen.fade-out {
+        opacity: 0;
+        visibility: hidden;
+      }
+      .splash-content {
+        text-align: center;
+        padding: 2rem;
+        max-width: 90%;
+      }
+      .splash-logo {
+        width: 150px;
+        height: 150px;
+        border-radius: 50%;
+        object-fit: cover;
+        border: 4px solid rgba(255, 215, 0, 0.5);
+        box-shadow: 0 0 40px rgba(255, 215, 0, 0.3);
+        margin-bottom: 2rem;
+        animation: float 3s ease-in-out infinite;
+      }
+      @keyframes float {
+        0%,
+        100% {
+          transform: translateY(0);
+        }
+        50% {
+          transform: translateY(-10px);
+        }
+      }
+      .splash-title {
+        font-family: "Playfair Display", serif;
+        font-size: 3rem;
+        color: #ffd700;
+        text-shadow: 0 4px 15px rgba(255, 215, 0, 0.3);
+        margin-bottom: 0.5rem;
+      }
+      .splash-subtitle {
+        font-size: 1.3rem;
+        color: #e0e0e0;
+        margin-bottom: 1rem;
+      }
+      .splash-org {
+        font-size: 1rem;
+        color: rgba(255, 255, 255, 0.7);
+        margin-bottom: 2.5rem;
+        text-transform: uppercase;
+        letter-spacing: 2px;
+      }
+      .btn-open {
+        background: linear-gradient(135deg, #8e44ad 0%, #da4453 100%);
+        border: none;
+        color: white;
+        padding: 18px 40px;
+        border-radius: 50px;
+        font-size: 1.2rem;
+        font-weight: 700;
+        cursor: pointer;
+        box-shadow: 0 5px 25px rgba(142, 68, 173, 0.5);
+        transition: all 0.3s ease;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+      }
+      .btn-open:hover {
+        transform: translateY(-3px) scale(1.05);
+        box-shadow: 0 8px 35px rgba(142, 68, 173, 0.7);
+      }
+      .btn-open span {
+        margin-right: 8px;
+      }
+      .hidden {
+        display: none !important;
+      }
+      .container {
+        opacity: 0;
+        transition: opacity 0.3s ease;
+      }
+      .container.visible {
+        opacity: 1;
+      }
+    </style>
+
+    <!-- Main CSS with cache busting -->
+    <script>
+      // Cache busting: ambil versi dari server atau gunakan timestamp sebagai fallback
+      (function () {
+        function loadCSS(version) {
+          var link = document.createElement("link");
+          link.rel = "stylesheet";
+          link.href = "style.css?v=" + version;
+          document.head.appendChild(link);
+        }
+
+        // Coba ambil versi dari server, fallback ke timestamp
+        fetch("/api/version")
+          .then(function (res) {
+            return res.json();
+          })
+          .then(function (data) {
+            loadCSS(data.version || Date.now());
+          })
+          .catch(function () {
+            loadCSS(Date.now());
+          });
+      })();
+    </script>
+    <noscript>
+      <link rel="stylesheet" href="style.css" />
+    </noscript>
+
     <!-- AOS Animation -->
     <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet" />
   </head>
@@ -31,7 +179,7 @@
       </div>
     </div>
 
-    <main class="container hidden" id="mainContent">
+    <main class="container hidden" id="mainContent" style="opacity: 0">
       <!-- Header / Hero -->
       <header class="hero" data-aos="fade-down">
         <div class="logos">
@@ -188,7 +336,28 @@
     <script>
       AOS.init();
     </script>
-    <script src="script.js"></script>
+    <!-- Script with cache busting -->
+    <script>
+      (function () {
+        function loadScript(version) {
+          var script = document.createElement("script");
+          script.src = "script.js?v=" + version;
+          document.body.appendChild(script);
+        }
+
+        // Coba ambil versi dari server, fallback ke timestamp
+        fetch("/api/version")
+          .then(function (res) {
+            return res.json();
+          })
+          .then(function (data) {
+            loadScript(data.version || Date.now());
+          })
+          .catch(function () {
+            loadScript(Date.now());
+          });
+      })();
+    </script>
 
     <!-- Background Music -->
     <audio id="bgMusic" loop>
@@ -207,9 +376,15 @@
       const mainContent = document.getElementById("mainContent");
       const openBtn = document.getElementById("openInvitation");
       let isPlaying = false;
+      let musicTriggered = false;
+
+      // Check if returning user (already submitted RSVP)
+      const isReturningUser =
+        localStorage.getItem("ipfp_rsvp_submitted") === "true";
 
       function playMusic() {
-        if (!isPlaying) {
+        if (!isPlaying && !musicTriggered) {
+          musicTriggered = true;
           bgMusic
             .play()
             .then(() => {
@@ -217,7 +392,9 @@
               musicToggle.textContent = "🔊";
               musicToggle.classList.add("playing");
             })
-            .catch(() => {});
+            .catch(() => {
+              musicTriggered = false;
+            });
         }
       }
 
@@ -228,21 +405,63 @@
           musicToggle.classList.remove("playing");
           isPlaying = false;
         } else {
+          musicTriggered = false;
           playMusic();
         }
       }
 
-      // Open invitation - play music and show content
-      openBtn.addEventListener("click", () => {
-        splashScreen.classList.add("fade-out");
-        setTimeout(() => {
-          splashScreen.style.display = "none";
-          mainContent.classList.remove("hidden");
-          musicToggle.classList.remove("hidden");
+      // For returning users: trigger music on first interaction
+      function setupInteractionTrigger() {
+        function onFirstInteraction() {
           playMusic();
+          // Remove listeners after first trigger
+          document.removeEventListener("touchstart", onFirstInteraction);
+          document.removeEventListener("scroll", onFirstInteraction);
+          document.removeEventListener("click", onFirstInteraction);
+        }
+
+        document.addEventListener("touchstart", onFirstInteraction, {
+          passive: true,
+        });
+        document.addEventListener("scroll", onFirstInteraction, {
+          passive: true,
+        });
+        document.addEventListener("click", onFirstInteraction, {
+          passive: true,
+        });
+      }
+
+      // Initialize based on user status
+      if (isReturningUser) {
+        // Returning user: Skip splash, show content directly
+        splashScreen.style.display = "none";
+        mainContent.classList.remove("hidden");
+        mainContent.style.opacity = "1";
+        musicToggle.classList.remove("hidden");
+
+        // Setup touch/scroll trigger for music
+        setupInteractionTrigger();
+
+        // Initialize AOS
+        if (typeof AOS !== "undefined") {
           AOS.refresh();
-        }, 500);
-      });
+        }
+      } else {
+        // New user: Normal splash flow
+        openBtn.addEventListener("click", () => {
+          splashScreen.classList.add("fade-out");
+          setTimeout(() => {
+            splashScreen.style.display = "none";
+            mainContent.classList.remove("hidden");
+            requestAnimationFrame(() => {
+              mainContent.style.opacity = "1";
+            });
+            musicToggle.classList.remove("hidden");
+            playMusic();
+            AOS.refresh();
+          }, 500);
+        });
+      }
 
       // Toggle button
       musicToggle.addEventListener("click", (e) => {
