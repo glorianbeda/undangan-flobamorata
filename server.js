@@ -278,18 +278,44 @@ app.post("/api/rsvp", (req, res) => {
     }
 
     // Check for duplicate name (case-insensitive)
-    const existingEntry = currentData.find(
+    const existingIndex = currentData.findIndex(
       (entry) => entry.name?.toLowerCase() === normalizedName.toLowerCase()
     );
 
-    if (existingEntry) {
-      // Return existing entry instead of creating duplicate
-      return res.status(200).json({
-        message:
-          "Data dengan nama ini sudah ada. Silakan edit data yang sudah ada.",
-        data: existingEntry,
-        isDuplicate: true,
+    if (existingIndex !== -1) {
+      // Merge guests: add new guests that don't already exist
+      const existingGuests = currentData[existingIndex].guests || [];
+      const existingGuestsLower = existingGuests.map((g) => g.toLowerCase());
+
+      const newGuests = normalizedGuests.filter(
+        (g) => !existingGuestsLower.includes(g.toLowerCase())
+      );
+
+      // Update existing entry with merged guests
+      currentData[existingIndex].guests = [...existingGuests, ...newGuests];
+      currentData[existingIndex].updatedAt = new Date().toISOString();
+
+      // Save updated data
+      fs.writeFile(DATA_FILE, JSON.stringify(currentData, null, 2), (err) => {
+        if (err) {
+          console.error("Write Error:", err);
+          return res.status(500).json({ error: "Gagal menyimpan data" });
+        }
+
+        const addedCount = newGuests.length;
+        const message =
+          addedCount > 0
+            ? `Data ditemukan! ${addedCount} anggota baru ditambahkan.`
+            : "Data dengan nama ini sudah ada. Anda dapat mengedit di bawah.";
+
+        return res.status(200).json({
+          message,
+          data: currentData[existingIndex],
+          isDuplicate: true,
+          addedGuests: newGuests,
+        });
       });
+      return;
     }
 
     const newEntry = {

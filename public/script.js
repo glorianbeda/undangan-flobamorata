@@ -331,10 +331,14 @@
             populateForm(result.data);
             updateUIForEditMode();
 
-            showFeedback(
-              "Nama sudah terdaftar! Data dimuat untuk diedit.",
-              "success"
-            );
+            // Show appropriate message based on whether guests were added
+            const addedCount = result.addedGuests?.length || 0;
+            const message =
+              addedCount > 0
+                ? `Nama sudah terdaftar! ${addedCount} anggota baru ditambahkan.`
+                : "Nama sudah terdaftar! Data dimuat untuk diedit.";
+
+            showFeedback(message, "success");
             showThankYouSection();
             return;
           }
