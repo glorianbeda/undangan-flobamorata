@@ -71,6 +71,38 @@ function generateId() {
   );
 }
 
+// Migrate legacy data: add IDs to entries that don't have them
+function migrateDataWithoutIds() {
+  try {
+    if (!fs.existsSync(DATA_FILE)) return;
+
+    const rawData = fs.readFileSync(DATA_FILE, "utf8");
+    let data = JSON.parse(rawData);
+    let needsUpdate = false;
+
+    data = data.map((entry) => {
+      if (!entry.id) {
+        needsUpdate = true;
+        return {
+          ...entry,
+          id: generateId(),
+        };
+      }
+      return entry;
+    });
+
+    if (needsUpdate) {
+      fs.writeFileSync(DATA_FILE, JSON.stringify(data, null, 2));
+      console.log("Migrated legacy data: added IDs to entries without them");
+    }
+  } catch (err) {
+    console.error("Migration error:", err);
+  }
+}
+
+// Run migration on startup
+migrateDataWithoutIds();
+
 // Levenshtein distance for similarity detection
 function levenshteinDistance(str1, str2) {
   const m = str1.length;
