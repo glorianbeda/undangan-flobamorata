@@ -376,6 +376,45 @@
           transform: translateX(0);
         }
       }
+
+      /* Similar Name Warning */
+      .similar-name {
+        color: #e53935;
+        font-weight: 700;
+      }
+
+      .similar-name::after {
+        content: " ⚠️";
+        font-size: 0.9rem;
+      }
+
+      .legend-box {
+        background: #fff3e0;
+        border: 1px solid #ff9800;
+        border-radius: 10px;
+        padding: 1rem 1.5rem;
+        margin-bottom: 1.5rem;
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+      }
+
+      .legend-box.hidden {
+        display: none;
+      }
+
+      .legend-icon {
+        font-size: 1.5rem;
+      }
+
+      .legend-text {
+        color: #e65100;
+        font-size: 0.9rem;
+      }
+
+      .legend-text strong {
+        color: #e53935;
+      }
     </style>
   </head>
   <body>
@@ -396,6 +435,16 @@
         </button>
         <a href="?export=excel" class="btn btn-excel"> 📊 Download Excel </a>
         <a href="?export=pdf" class="btn btn-pdf"> 📄 Download PDF </a>
+      </div>
+
+      <!-- Legend for Similar Names -->
+      <div class="legend-box hidden" id="similarLegend">
+        <span class="legend-icon">⚠️</span>
+        <span class="legend-text">
+          Nama <strong>berwarna merah</strong> menandakan nama yang
+          mirip/kemungkinan typo dengan peserta lain. Silakan periksa dan edit
+          jika diperlukan.
+        </span>
       </div>
 
       <div class="table-wrapper">
@@ -478,12 +527,29 @@
       // Load data
       async function loadData() {
         try {
-          const response = await fetch("/api/admin/data");
-          const data = await response.json();
+          // Fetch data and similar names in parallel
+          const [dataResponse, similarResponse] = await Promise.all([
+            fetch("/api/admin/data"),
+            fetch("/api/admin/similar-names"),
+          ]);
+
+          const data = await dataResponse.json();
+          const similarData = await similarResponse.json();
           currentData = data;
 
           const tableBody = document.getElementById("tableBody");
           const totalPeserta = document.getElementById("totalPeserta");
+          const similarLegend = document.getElementById("similarLegend");
+
+          // Get flagged IDs
+          const flaggedIds = new Set(similarData.flaggedIds || []);
+
+          // Show/hide legend
+          if (flaggedIds.size > 0) {
+            similarLegend.classList.remove("hidden");
+          } else {
+            similarLegend.classList.add("hidden");
+          }
 
           if (data.length === 0) {
             tableBody.innerHTML =
@@ -500,11 +566,16 @@
 
           // Populate table with action buttons
           tableBody.innerHTML = data
-            .map(
-              (entry, index) => `
+            .map((entry, index) => {
+              const isFlagged = flaggedIds.has(entry.id);
+              const nameClass = isFlagged ? "similar-name" : "";
+
+              return `
                 <tr>
                   <td>${index + 1}</td>
-                  <td><strong>${escapeHtml(entry.name)}</strong></td>
+                  <td><strong class="${nameClass}">${escapeHtml(
+                entry.name
+              )}</strong></td>
                   <td>${entry.guests?.length || 0}</td>
                   <td>${entry.guests?.map(escapeHtml).join(", ") || "-"}</td>
                   <td>${new Date(entry.timestamp).toLocaleString("id-ID")}</td>
@@ -523,13 +594,9 @@
                     </div>
                   </td>
                 </tr>
-              `
-            )
+              `;
+            })
             .join("");
-
-          // Re-attach event listeners (optional/safety, though simpler to just have one static listener if possible.
-          // Since we wipe innerHTML, we should attach listener effectively.
-          // Best practice: attach to static parent once.)
         } catch (error) {
           console.error("Error loading data:", error);
           document.getElementById("tableBody").innerHTML =

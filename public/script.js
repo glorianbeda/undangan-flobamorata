@@ -135,6 +135,126 @@
       input.focus();
     });
 
+    // ========== SEARCH FUNCTIONALITY ==========
+    const searchDropdown = document.getElementById("searchDropdown");
+    let searchTimeout = null;
+
+    // Debounced search
+    nameInput.addEventListener("input", (e) => {
+      const query = e.target.value.trim();
+
+      // Clear previous timeout
+      if (searchTimeout) {
+        clearTimeout(searchTimeout);
+      }
+
+      // Hide dropdown if query too short
+      if (query.length < 2) {
+        searchDropdown.classList.add("hidden");
+        searchDropdown.innerHTML = "";
+        return;
+      }
+
+      // Debounce: wait 300ms before searching
+      searchTimeout = setTimeout(async () => {
+        try {
+          const response = await fetch(
+            `/api/rsvp/search?q=${encodeURIComponent(query)}`
+          );
+          const results = await response.json();
+
+          if (results.length === 0) {
+            searchDropdown.classList.add("hidden");
+            searchDropdown.innerHTML = "";
+            return;
+          }
+
+          // Populate dropdown
+          searchDropdown.innerHTML = results
+            .map(
+              (item) => `
+              <div class="search-item" data-id="${item.id}">
+                <span class="search-item-name">${escapeHtml(item.name)}</span>
+                <span class="search-item-guests">${
+                  item.guestCount
+                } anggota</span>
+              </div>
+            `
+            )
+            .join("");
+
+          searchDropdown.classList.remove("hidden");
+        } catch (error) {
+          console.error("Search error:", error);
+          searchDropdown.classList.add("hidden");
+        }
+      }, 300);
+    });
+
+    // Handle dropdown item click
+    searchDropdown.addEventListener("click", async (e) => {
+      const item = e.target.closest(".search-item");
+      if (!item) return;
+
+      const id = item.dataset.id;
+      if (!id) return;
+
+      try {
+        const response = await fetch(`/api/rsvp/${id}`);
+        if (response.ok) {
+          const data = await response.json();
+
+          // Set state
+          existingRsvpId = id;
+          isEditMode = true;
+
+          // Save to localStorage
+          localStorage.setItem("ipfp_rsvp_id", id);
+          localStorage.setItem("ipfp_rsvp_submitted", "true");
+
+          // Update URL
+          const newUrl = `${window.location.pathname}?id=${id}`;
+          window.history.replaceState({}, "", newUrl);
+
+          // Populate form
+          populateForm(data);
+          updateUIForEditMode();
+
+          // Show feedback
+          showFeedback(
+            "Data ditemukan! Anda dapat mengedit di bawah.",
+            "success"
+          );
+        }
+      } catch (error) {
+        console.error("Load error:", error);
+        showFeedback("Gagal memuat data", "error");
+      }
+
+      searchDropdown.classList.add("hidden");
+    });
+
+    // Hide dropdown on blur (with delay to allow click)
+    nameInput.addEventListener("blur", () => {
+      setTimeout(() => {
+        searchDropdown.classList.add("hidden");
+      }, 200);
+    });
+
+    // Show dropdown on focus if has content
+    nameInput.addEventListener("focus", () => {
+      if (searchDropdown.innerHTML.trim() && nameInput.value.length >= 2) {
+        searchDropdown.classList.remove("hidden");
+      }
+    });
+
+    // Escape HTML helper
+    function escapeHtml(text) {
+      const div = document.createElement("div");
+      div.textContent = text;
+      return div.innerHTML;
+    }
+
     // Form Submission
     rsvpForm.addEventListener("submit", async (e) => {
       e.preventDefault();

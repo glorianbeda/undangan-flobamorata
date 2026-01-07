@@ -266,7 +266,7 @@
         </p>
 
         <form id="rsvpForm">
-          <div class="form-group">
+          <div class="form-group name-search-wrapper">
             <label for="name">Nama Lengkap</label>
             <input
               type="text"
@@ -274,7 +274,14 @@
               name="name"
               placeholder="Masukan nama anda..."
               required
+              autocomplete="off"
             />
+            <div id="searchDropdown" class="search-dropdown hidden">
+              <!-- Search results will be populated here -->
+            </div>
+            <p class="search-hint">
+              Ketik nama untuk mencari data yang sudah ada
+            </p>
           </div>
 
           <div class="guests-section">
