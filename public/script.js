@@ -51,6 +51,7 @@
 
           populateForm(data);
           updateUIForEditMode();
+          showThankYouSection();
         } else if (response.status === 404) {
           // ID not found, clear localStorage
           localStorage.removeItem("ipfp_rsvp_id");

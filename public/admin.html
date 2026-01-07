@@ -510,14 +510,14 @@
                   <td>${new Date(entry.timestamp).toLocaleString("id-ID")}</td>
                   <td>
                     <div class="action-btns">
-                      <button class="btn btn-small btn-edit" onclick="openEditModal('${
+                      <button class="btn btn-small btn-edit" data-id="${
                         entry.id
-                      }')">
+                      }">
                         ✏️ Edit
                       </button>
-                      <button class="btn btn-small btn-delete" onclick="deleteEntry('${
+                      <button class="btn btn-small btn-delete" data-id="${
                         entry.id
-                      }')">
+                      }">
                         🗑️ Hapus
                       </button>
                     </div>
@@ -526,12 +526,30 @@
               `
             )
             .join("");
+
+          // Re-attach event listeners (optional/safety, though simpler to just have one static listener if possible.
+          // Since we wipe innerHTML, we should attach listener effectively.
+          // Best practice: attach to static parent once.)
         } catch (error) {
           console.error("Error loading data:", error);
           document.getElementById("tableBody").innerHTML =
             '<tr><td colspan="6" class="empty">Gagal memuat data</td></tr>';
         }
       }
+
+      // Event Delegation for Table Actions
+      document.getElementById("tableBody").addEventListener("click", (e) => {
+        const editBtn = e.target.closest(".btn-edit");
+        const deleteBtn = e.target.closest(".btn-delete");
+
+        if (editBtn) {
+          const id = editBtn.dataset.id;
+          if (id) openEditModal(id);
+        } else if (deleteBtn) {
+          const id = deleteBtn.dataset.id;
+          if (id) deleteEntry(id);
+        }
+      });
 
       // Escape HTML to prevent XSS
       function escapeHtml(text) {
