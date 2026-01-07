@@ -138,8 +138,10 @@
     // ========== SEARCH FUNCTIONALITY ==========
     const searchDropdown = document.getElementById("searchDropdown");
     let searchTimeout = null;
+    let lastSearchQuery = "";
+    let searchCache = {}; // Cache results to avoid repeated requests
 
-    // Debounced search
+    // Debounced search - made less aggressive for Brave browser compatibility
     nameInput.addEventListener("input", (e) => {
       const query = e.target.value.trim();
 
@@ -148,48 +150,67 @@
         clearTimeout(searchTimeout);
       }
 
-      // Hide dropdown if query too short
-      if (query.length < 2) {
+      // Hide dropdown if query too short (minimum 3 characters)
+      if (query.length < 3) {
         searchDropdown.classList.add("hidden");
         searchDropdown.innerHTML = "";
         return;
       }
 
-      // Debounce: wait 300ms before searching
+      // Skip if same query as before
+      if (query === lastSearchQuery && searchCache[query]) {
+        displaySearchResults(searchCache[query]);
+        return;
+      }
+
+      // Debounce: wait 600ms before searching (longer to be less aggressive)
       searchTimeout = setTimeout(async () => {
+        // Check cache first
+        if (searchCache[query]) {
+          displaySearchResults(searchCache[query]);
+          lastSearchQuery = query;
+          return;
+        }
+
         try {
           const response = await fetch(
             `/api/rsvp/search?q=${encodeURIComponent(query)}`
           );
           const results = await response.json();
 
-          if (results.length === 0) {
-            searchDropdown.classList.add("hidden");
-            searchDropdown.innerHTML = "";
-            return;
-          }
+          // Cache the results
+          searchCache[query] = results;
+          lastSearchQuery = query;
 
-          // Populate dropdown
-          searchDropdown.innerHTML = results
-            .map(
-              (item) => `
-              <div class="search-item" data-id="${item.id}">
-                <span class="search-item-name">${escapeHtml(item.name)}</span>
-                <span class="search-item-guests">${
-                  item.guestCount
-                } anggota</span>
-              </div>
-            `
-            )
-            .join("");
-
-          searchDropdown.classList.remove("hidden");
+          displaySearchResults(results);
         } catch (error) {
           console.error("Search error:", error);
           searchDropdown.classList.add("hidden");
         }
-      }, 300);
+      }, 600);
     });
+
+    // Display search results in dropdown
+    function displaySearchResults(results) {
+      if (results.length === 0) {
+        searchDropdown.classList.add("hidden");
+        searchDropdown.innerHTML = "";
+        return;
+      }
+
+      searchDropdown.innerHTML = results
+        .map(
+          (item) => `
+          <div class="search-item" data-id="${item.id}">
+            <span class="search-item-name">${escapeHtml(item.name)}</span>
+            <span class="search-item-guests">${item.guestCount} anggota</span>
+          </div>
+        `
+        )
+        .join("");
+
+      searchDropdown.classList.remove("hidden");
+    }
 
     // Handle dropdown item click
     searchDropdown.addEventListener("click", async (e) => {
