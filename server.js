@@ -71,6 +71,16 @@ function generateId() {
   );
 }
 
+// Convert string to Title Case (first letter of each word uppercase)
+function toTitleCase(str) {
+  if (!str) return str;
+  return str
+    .toLowerCase()
+    .split(" ")
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(" ");
+}
+
 // Migrate legacy data: add IDs to entries that don't have them
 function migrateDataWithoutIds() {
   try {
@@ -250,13 +260,9 @@ app.post("/api/rsvp", (req, res) => {
     return res.status(400).json({ error: "Nama wajib diisi" });
   }
 
-  const newEntry = {
-    id: generateId(),
-    name,
-    guests: guests || [],
-    timestamp: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
-  };
+  // Normalize name to Title Case
+  const normalizedName = toTitleCase(name.trim());
+  const normalizedGuests = (guests || []).map((g) => toTitleCase(g.trim()));
 
   fs.readFile(DATA_FILE, "utf8", (err, data) => {
     if (err) {
@@ -270,6 +276,30 @@ app.post("/api/rsvp", (req, res) => {
       console.error("Parse Error:", parseErr);
       currentData = [];
     }
+
+    // Check for duplicate name (case-insensitive)
+    const existingEntry = currentData.find(
+      (entry) => entry.name?.toLowerCase() === normalizedName.toLowerCase()
+    );
+
+    if (existingEntry) {
+      // Return existing entry instead of creating duplicate
+      return res.status(200).json({
+        message:
+          "Data dengan nama ini sudah ada. Silakan edit data yang sudah ada.",
+        data: existingEntry,
+        isDuplicate: true,
+      });
+    }
+
+    const newEntry = {
+      id: generateId(),
+      name: normalizedName,
+      guests: normalizedGuests,
+      timestamp: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    };
+
     currentData.push(newEntry);
 
     fs.writeFile(DATA_FILE, JSON.stringify(currentData, null, 2), (err) => {
@@ -313,11 +343,11 @@ app.put("/api/rsvp/:id", (req, res) => {
       return res.status(404).json({ error: "RSVP tidak ditemukan" });
     }
 
-    // Update entry
+    // Update entry with Title Case normalization
     currentData[index] = {
       ...currentData[index],
-      name,
-      guests: guests || [],
+      name: toTitleCase(name.trim()),
+      guests: (guests || []).map((g) => toTitleCase(g.trim())),
       updatedAt: new Date().toISOString(),
     };
 

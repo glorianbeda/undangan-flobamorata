@@ -316,6 +316,29 @@
         const result = await response.json();
 
         if (response.ok) {
+          // Check if this was a duplicate detection
+          if (result.isDuplicate && result.data) {
+            // Load existing data into edit mode
+            existingRsvpId = result.data.id;
+            isEditMode = true;
+
+            localStorage.setItem("ipfp_rsvp_id", result.data.id);
+            localStorage.setItem("ipfp_rsvp_submitted", "true");
+
+            const newUrl = `${window.location.pathname}?id=${result.data.id}`;
+            window.history.replaceState({}, "", newUrl);
+
+            populateForm(result.data);
+            updateUIForEditMode();
+
+            showFeedback(
+              "Nama sudah terdaftar! Data dimuat untuk diedit.",
+              "success"
+            );
+            showThankYouSection();
+            return;
+          }
+
           // Save ID for future edits
           if (result.data && result.data.id) {
             localStorage.setItem("ipfp_rsvp_id", result.data.id);
