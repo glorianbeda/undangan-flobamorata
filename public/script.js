@@ -328,6 +328,7 @@
             const newUrl = `${window.location.pathname}?id=${result.data.id}`;
             window.history.replaceState({}, "", newUrl);
 
+            // Populate form with updated data (including merged guests)
             populateForm(result.data);
             updateUIForEditMode();
 
@@ -339,7 +340,15 @@
                 : "Nama sudah terdaftar! Data dimuat untuk diedit.";
 
             showFeedback(message, "success");
-            showThankYouSection();
+
+            // Scroll to form first to show updated data
+            rsvpSection.scrollIntoView({ behavior: "smooth", block: "center" });
+
+            // Then show thank you section after a delay
+            setTimeout(() => {
+              showThankYouSection();
+            }, 1500);
+
             return;
           }
 
